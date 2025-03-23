@@ -331,9 +331,15 @@
      ******************************************************/
     function showFeedback(status, question, fraction) {
       feedbackEl.style.display = 'block';
+      
+      
+      // Escape any HTML characters so tags are displayed as plain text
+      const escapeHTML = (str) =>
+      str.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      
       // Build correct answer string
       const correctAnswersText = question.correctAnswers
-        .map(idx => question.options[idx])
+        .map(idx => escapeHTML(question.options[idx]))
         .join(', ');
 
       if (status === 'correct') {
