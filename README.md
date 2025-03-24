@@ -105,6 +105,7 @@ asking about how was your day </q>
 
 ``` function add(a, b) { return a + b; } ```
 
+Select the right answer from below:
 </q>
 • It subtracts  
 • It adds *  
