@@ -35,15 +35,15 @@
   <script>
     function convertQuestions() {
       const input = document.getElementById('inputText').value;
-      const lines = input.split('\n').map(line => line.trim()).filter(Boolean);
+      const lines = input.split('\n').filter(line => line.trim() !== ''); // Keep non-empty lines without trimming
 
       const questionPool = [];
       let currentQuestion = null;
+      let inMultilineQuestion = false;
+      let accumulatedQuestionParts = [];
 
-      // Helper: finalize a question object (detect single vs multiple)
       function finalizeQuestion() {
         if (!currentQuestion) return;
-        // Determine question type
         if (currentQuestion.correctAnswers.length === 1) {
           currentQuestion.type = "single";
         } else {
@@ -52,52 +52,63 @@
         questionPool.push(currentQuestion);
       }
 
-      // We'll try to detect lines that match this pattern: "1. Some text"
-      // That indicates the start of a new question
-      const questionRegex = /^\d+\.\s+(.*)$/;  // e.g. "1. Question text"
+      const questionRegex = /^\s*\d+\.\s+(.*)/; // Allows leading whitespace before question number
 
-      // Parse lines
       lines.forEach(line => {
         const questionMatch = line.match(questionRegex);
 
         if (questionMatch) {
-          // Found a new question => finalize the previous question, then start a new one
           finalizeQuestion();
           currentQuestion = {
-            question: questionMatch[1].trim(),
+            question: '',
             options: [],
             correctAnswers: []
           };
-        } else if (currentQuestion) {
-          // Probably one of the bullet lines for an answer
-          // Usually: "• Some text" or "• Some text *"
-          // Let's strip leading "• " if present
-          let answerText = line.replace(/^•\s*/, "");
-          
-          // Check if there's a trailing '*'
-          const starIndex = answerText.indexOf('*');
-          let isCorrect = false;
-          if (starIndex >= 0) {
-            isCorrect = true;
-            // Remove the asterisk (and anything after it if needed)
-            answerText = answerText.substring(0, starIndex).trim();
+          const questionText = questionMatch[1];
+          if (questionText.trim().startsWith('<q>')) {
+            inMultilineQuestion = true;
+            let content = questionText.trim().slice(3); // Remove '<q>'
+            const endIdx = content.indexOf('</q>');
+            if (endIdx !== -1) {
+              currentQuestion.question = content.slice(0, endIdx).trim();
+              inMultilineQuestion = false;
+            } else {
+              accumulatedQuestionParts = [content];
+            }
+          } else {
+            currentQuestion.question = questionText.trim();
           }
-
-          // Add to options
-          const optionIndex = currentQuestion.options.length;
-          currentQuestion.options.push(answerText);
-
-          // If it was correct, note the index
-          if (isCorrect) {
-            currentQuestion.correctAnswers.push(optionIndex);
+        } else if (currentQuestion) {
+          if (inMultilineQuestion) {
+            const endIdx = line.indexOf('</q>');
+            if (endIdx !== -1) {
+              const content = line.substring(0, endIdx).trim();
+              accumulatedQuestionParts.push(content);
+              currentQuestion.question = accumulatedQuestionParts.join('\n');
+              inMultilineQuestion = false;
+            } else {
+              accumulatedQuestionParts.push(line.trim());
+            }
+          } else {
+            // Process answer options
+            let answerText = line.replace(/^\s*•\s*/, '').trim();
+            let starIndex = answerText.indexOf('*');
+            let isCorrect = false;
+            if (starIndex >= 0) {
+              isCorrect = true;
+              answerText = answerText.substring(0, starIndex).trim();
+            }
+            const optionIndex = currentQuestion.options.length;
+            currentQuestion.options.push(answerText);
+            if (isCorrect) {
+              currentQuestion.correctAnswers.push(optionIndex);
+            }
           }
         }
       });
 
-      // Final question after loop ends
       finalizeQuestion();
 
-      // Show result
       const outputEl = document.getElementById('output');
       outputEl.textContent = "const questionPool = " + JSON.stringify(questionPool, null, 2) + ";";
     }
