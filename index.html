@@ -188,229 +188,248 @@
       // add more questions if you want ...
     ];
 
-    /******************************************************
-     * 2) GLOBAL STATE
-     ******************************************************/
-    let selectedQuestions = [];
-    let currentIndex = 0;
-    let userScore = 0; // partial scores for multiple-choice
-    let timerInterval = null;
-    let timeRemaining = 0;
+  /******************************************************
+   * 2) GLOBAL STATE
+   ******************************************************/
+   let selectedQuestions = [];
+  let currentIndex = 0;
+  let userScore = 0; // partial scores for multiple-choice
+  let timerInterval = null;
+  let timeRemaining = 0;
 
-    /******************************************************
-     * 3) DOM ELEMENTS
-     ******************************************************/
-    const timerEl            = document.getElementById('timer');
-    const questionTextEl     = document.getElementById('question-text');
-    const optionsContainerEl = document.getElementById('options-container');
-    const feedbackEl         = document.getElementById('feedback');
-    const nextBtn            = document.getElementById('next-btn');
-    const checkBtn           = document.getElementById('check-btn');
-    const themeToggleBtn     = document.getElementById('theme-toggle');
-    const scoreContainerEl   = document.getElementById('score-container');
-    const scorePercentEl     = document.getElementById('score-percent');
-    const questionsRemainingEl = document.getElementById('questions-remaining');
+  /******************************************************
+   * 3) DOM ELEMENTS
+   ******************************************************/
+  const timerEl              = document.getElementById('timer');
+  const questionTextEl       = document.getElementById('question-text');
+  const optionsContainerEl   = document.getElementById('options-container');
+  const feedbackEl           = document.getElementById('feedback');
+  const nextBtn              = document.getElementById('next-btn');
+  const checkBtn             = document.getElementById('check-btn');
+  const themeToggleBtn       = document.getElementById('theme-toggle');
+  const scoreContainerEl     = document.getElementById('score-container');
+  const scorePercentEl       = document.getElementById('score-percent');
+  const questionsRemainingEl = document.getElementById('questions-remaining');
 
-    /******************************************************
-     * 4) INIT QUIZ
-     ******************************************************/
-    window.addEventListener('DOMContentLoaded', () => {
-      initQuiz();
-    });
-
-    function initQuiz() {
-      // Shuffle and pick N questions
-      const shuffled = questionPool.sort(() => Math.random() - 0.5);
-      selectedQuestions = shuffled.slice(0, config.questionsToPick);
-
-      // Reset state
-      currentIndex = 0;
-      userScore = 0;
-      timeRemaining = config.totalTime;
-      feedbackEl.style.display = 'none';
-      nextBtn.classList.add('hidden');
-      checkBtn.classList.remove('hidden');
-      scoreContainerEl.classList.add('hidden');
-      document.getElementById('quiz-layout').style.display = 'block';
-
-      // Start timer
-      if (timerInterval) clearInterval(timerInterval);
-      timerInterval = setInterval(updateTimer, 1000);
-
-      // Render first question
-      renderQuestion();
-    }
-
-    /******************************************************
-     * 5) RENDER QUESTION
-     ******************************************************/
-     function renderQuestion() {
-  const q = selectedQuestions[currentIndex];
-  questionTextEl.textContent = q.question;
-  optionsContainerEl.innerHTML = '';
-  feedbackEl.textContent = '';
-  feedbackEl.style.display = 'none';
-  feedbackEl.className = 'feedback'; // reset classes
-
-  // Single-choice => radio, multiple => checkbox
-  const inputType = (q.type === 'single') ? 'radio' : 'checkbox';
-
-  // === RANDOMIZE ANSWERS BY SHUFFLING THE OPTIONS ===
-  // First, map each option to an object that remembers its original index.
-  const shuffledOptions = q.options
-    .map((optionText, originalIndex) => ({ 
-      text: optionText, 
-      index: originalIndex 
-    }))
-    .sort(() => Math.random() - 0.5);
-
-  // Now loop over the shuffled list to build UI
-  shuffledOptions.forEach(({ text, index }) => {
-    const wrapper = document.createElement('div');
-    wrapper.className = 'option-item';
-
-    const input = document.createElement('input');
-    input.type = inputType;
-    input.name = 'quizOption_' + currentIndex; // group name
-    // IMPORTANT: set the value to the *original* index
-    input.value = index; 
-
-    const label = document.createElement('label');
-    label.textContent = text;
-
-    wrapper.appendChild(input);
-    wrapper.appendChild(label);
-    optionsContainerEl.appendChild(wrapper);
+  /******************************************************
+   * 4) INIT QUIZ
+   ******************************************************/
+  window.addEventListener('DOMContentLoaded', () => {
+    initQuiz();
   });
 
-  // Update "questions remaining"
-  questionsRemainingEl.textContent = (selectedQuestions.length - currentIndex);
-}
+  function initQuiz() {
+    // Shuffle and pick N questions
+    const shuffled = questionPool.sort(() => Math.random() - 0.5);
+    selectedQuestions = shuffled.slice(0, config.questionsToPick);
 
-    /******************************************************
-     * 6) CHECK ANSWER
-     ******************************************************/
-    checkBtn.addEventListener('click', () => {
-      const q = selectedQuestions[currentIndex];
-      const inputs = [...optionsContainerEl.querySelectorAll('input')];
-      
-      // Indices that the user checked
-      const checkedIndices = inputs
-        .filter(inp => inp.checked)
-        .map(inp => parseInt(inp.value));
+    // Reset state
+    currentIndex = 0;
+    userScore = 0;
+    timeRemaining = config.totalTime;
+    feedbackEl.style.display = 'none';
+    nextBtn.classList.add('hidden');
+    checkBtn.classList.remove('hidden');
+    scoreContainerEl.classList.add('hidden');
+    document.getElementById('quiz-layout').style.display = 'block';
 
-      // Evaluate correctness
-      const correctSet = new Set(q.correctAnswers);
-      const userSet = new Set(checkedIndices);
+    // Start timer
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(updateTimer, 1000);
 
-      // If user selected any *incorrect* => 0
-      let fraction = 0;
-      for (let val of userSet) {
-        if (!correctSet.has(val)) {
-          fraction = 0;
-          showFeedback('incorrect', q, fraction);
-          userScore += 0;
-          return;
-        }
-      }
+    // Render first question
+    renderQuestion();
+  }
 
-      // If user didn't pick anything wrong but missed some correct => partial
-      fraction = userSet.size / correctSet.size;
-      if (fraction === 1) {
-        showFeedback('correct', q, fraction);
-      } else if (fraction > 0) {
-        showFeedback('partial', q, fraction);
-      } else {
+  /******************************************************
+   * 5) HELPER: FORMAT TEXT FOR HTML
+   ******************************************************/
+  function formatTextForHTML(str) {
+    // 1) Escape < and > so they're shown as text
+    let safe = str
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+
+    // 2) Replace code blocks: ``` some code ```
+    safe = safe.replace(/```([^`]+)```/g, '<pre><code>$1</code></pre>');
+
+    // 3) Convert newlines to <br/>
+    safe = safe.replace(/\n/g, '<br/>');
+
+    return safe;
+  }
+
+  /******************************************************
+   * 6) RENDER QUESTION
+   ******************************************************/
+  function renderQuestion() {
+    const q = selectedQuestions[currentIndex];
+
+    // Use formatTextForHTML for the question
+    questionTextEl.innerHTML = formatTextForHTML(q.question);
+
+    optionsContainerEl.innerHTML = '';
+    feedbackEl.textContent = '';
+    feedbackEl.style.display = 'none';
+    feedbackEl.className = 'feedback'; // reset classes
+
+    // Single-choice => radio, multiple => checkbox
+    const inputType = (q.type === 'single') ? 'radio' : 'checkbox';
+
+    // === RANDOMIZE ANSWERS BY SHUFFLING THE OPTIONS ===
+    const shuffledOptions = q.options
+      .map((optionText, originalIndex) => ({ 
+        text: optionText, 
+        index: originalIndex 
+      }))
+      .sort(() => Math.random() - 0.5);
+
+    // Now loop over the shuffled list to build UI
+    shuffledOptions.forEach(({ text, index }) => {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'option-item';
+
+      const input = document.createElement('input');
+      input.type = inputType;
+      input.name = 'quizOption_' + currentIndex; // group name
+      // IMPORTANT: set the value to the *original* index
+      input.value = index; 
+
+      // Use the same function for options so code blocks appear properly
+      const label = document.createElement('label');
+      label.innerHTML = formatTextForHTML(text);
+
+      wrapper.appendChild(input);
+      wrapper.appendChild(label);
+      optionsContainerEl.appendChild(wrapper);
+    });
+
+    // Update "questions remaining"
+    questionsRemainingEl.textContent = (selectedQuestions.length - currentIndex);
+  }
+
+  /******************************************************
+   * 7) CHECK ANSWER
+   ******************************************************/
+  checkBtn.addEventListener('click', () => {
+    const q = selectedQuestions[currentIndex];
+    const inputs = [...optionsContainerEl.querySelectorAll('input')];
+    
+    // Indices that the user checked
+    const checkedIndices = inputs
+      .filter(inp => inp.checked)
+      .map(inp => parseInt(inp.value));
+
+    // Evaluate correctness
+    const correctSet = new Set(q.correctAnswers);
+    const userSet = new Set(checkedIndices);
+
+    // If user selected any *incorrect* => 0
+    let fraction = 0;
+    for (let val of userSet) {
+      if (!correctSet.has(val)) {
+        fraction = 0;
         showFeedback('incorrect', q, fraction);
+        userScore += 0;
+        return;
       }
-      userScore += fraction;
-    });
+    }
 
-    /******************************************************
-     * 7) SHOW FEEDBACK
-     ******************************************************/
-    function showFeedback(status, question, fraction) {
-      feedbackEl.style.display = 'block';
-      
-      
-      // Escape any HTML characters so tags are displayed as plain text
-      const escapeHTML = (str) =>
+    // If user didn't pick anything wrong but missed some correct => partial
+    fraction = userSet.size / correctSet.size;
+    if (fraction === 1) {
+      showFeedback('correct', q, fraction);
+    } else if (fraction > 0) {
+      showFeedback('partial', q, fraction);
+    } else {
+      showFeedback('incorrect', q, fraction);
+    }
+    userScore += fraction;
+  });
+
+  /******************************************************
+   * 8) SHOW FEEDBACK
+   ******************************************************/
+  function showFeedback(status, question, fraction) {
+    feedbackEl.style.display = 'block';
+
+    // For the "correct answers" portion, we might just show them as text:
+    const escapeHTML = (str) =>
       str.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-      
-      // Build correct answer string
-      const correctAnswersText = question.correctAnswers
-        .map(idx => escapeHTML(question.options[idx]))
-        .join(', ');
 
-      if (status === 'correct') {
-        feedbackEl.classList.add('correct');
-        feedbackEl.innerHTML = 'Correct!';
-      } else if (status === 'partial') {
-        feedbackEl.classList.add('partial');
-        const percent = (fraction * 100).toFixed(0);
-        feedbackEl.innerHTML = `Partially correct (${percent}%).<br/>
-          Correct answers: ${correctAnswersText}`;
-      } else {
-        feedbackEl.classList.add('incorrect');
-        feedbackEl.innerHTML = `Incorrect!<br/>
-          Correct answers: ${correctAnswersText}`;
-      }
+    // Build correct answer string
+    const correctAnswersText = question.correctAnswers
+      .map(idx => escapeHTML(question.options[idx]))
+      .join(', ');
 
-      // Hide check button, show next
-      checkBtn.classList.add('hidden');
-      nextBtn.classList.remove('hidden');
+    if (status === 'correct') {
+      feedbackEl.classList.add('correct');
+      feedbackEl.innerHTML = 'Correct!';
+    } else if (status === 'partial') {
+      feedbackEl.classList.add('partial');
+      const percent = (fraction * 100).toFixed(0);
+      feedbackEl.innerHTML = `Partially correct (${percent}%).<br/>
+        Correct answers: ${correctAnswersText}`;
+    } else {
+      feedbackEl.classList.add('incorrect');
+      feedbackEl.innerHTML = `Incorrect!<br/>
+        Correct answers: ${correctAnswersText}`;
     }
 
-    /******************************************************
-     * 8) NEXT QUESTION
-     ******************************************************/
-    nextBtn.addEventListener('click', () => {
-      currentIndex++;
-      if (currentIndex >= selectedQuestions.length) {
-        endQuiz();
-        return;
-      }
-      nextBtn.classList.add('hidden');
-      checkBtn.classList.remove('hidden');
-      renderQuestion();
-    });
+    // Hide check button, show next
+    checkBtn.classList.add('hidden');
+    nextBtn.classList.remove('hidden');
+  }
 
-    /******************************************************
-     * 9) END QUIZ
-     ******************************************************/
-    function endQuiz() {
-      clearInterval(timerInterval);
-      timerInterval = null;
-      document.getElementById('quiz-layout').style.display = 'none';
-
-      // Convert userScore to a final percentage
-      const finalScore = (userScore / selectedQuestions.length) * 100;
-      scorePercentEl.textContent = finalScore.toFixed(2) + '%';
-      scoreContainerEl.classList.remove('hidden');
+  /******************************************************
+   * 9) NEXT QUESTION
+   ******************************************************/
+  nextBtn.addEventListener('click', () => {
+    currentIndex++;
+    if (currentIndex >= selectedQuestions.length) {
+      endQuiz();
+      return;
     }
+    nextBtn.classList.add('hidden');
+    checkBtn.classList.remove('hidden');
+    renderQuestion();
+  });
 
-    /******************************************************
-     * 10) TIMER
-     ******************************************************/
-    function updateTimer() {
-      if (timeRemaining <= 0) {
-        endQuiz();
-        return;
-      }
-      timeRemaining--;
-      let minutes = Math.floor(timeRemaining / 60);
-      let seconds = timeRemaining % 60;
-      if (seconds < 10) seconds = '0' + seconds;
-      timerEl.textContent = `Time: ${minutes}:${seconds}`;
+  /******************************************************
+   * 10) END QUIZ
+   ******************************************************/
+  function endQuiz() {
+    clearInterval(timerInterval);
+    timerInterval = null;
+    document.getElementById('quiz-layout').style.display = 'none';
+
+    // Convert userScore to a final percentage
+    const finalScore = (userScore / selectedQuestions.length) * 100;
+    scorePercentEl.textContent = finalScore.toFixed(2) + '%';
+    scoreContainerEl.classList.remove('hidden');
+  }
+
+  /******************************************************
+   * 11) TIMER
+   ******************************************************/
+  function updateTimer() {
+    if (timeRemaining <= 0) {
+      endQuiz();
+      return;
     }
+    timeRemaining--;
+    let minutes = Math.floor(timeRemaining / 60);
+    let seconds = timeRemaining % 60;
+    if (seconds < 10) seconds = '0' + seconds;
+    timerEl.textContent = `Time: ${minutes}:${seconds}`;
+  }
 
-    /******************************************************
-     * 11) THEME TOGGLE
-     ******************************************************/
-    themeToggleBtn.addEventListener('click', () => {
-      document.body.classList.toggle('dark-mode');
-    });
-
+  /******************************************************
+   * 12) THEME TOGGLE
+   ******************************************************/
+  themeToggleBtn.addEventListener('click', () => {
+    document.body.classList.toggle('dark-mode');
+  });
 
 
     /*
