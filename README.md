@@ -41,6 +41,8 @@ On the server anyone can feel free to ask questions, engage in the comunity and 
 
 ✅ Properly extracts code blocks (```)
 
+✅ Mobile scalable and friendly UI
+
 ---
 
 ## Usage Instructions
