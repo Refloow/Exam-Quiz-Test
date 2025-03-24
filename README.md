@@ -16,7 +16,7 @@ On the server anyone can feel free to ask questions, engage in the comunity and 
 
 ✅ **Single & Multiple Choice Questions**
 - Supports both **single-choice** and **multi-choice** question formats.
-- 
+
 ✅ **Dark Mode & Light Mode**
 
 ✅ **Randomized Question & Answer Order**
@@ -28,7 +28,7 @@ On the server anyone can feel free to ask questions, engage in the comunity and 
 - **Multiple-choice questions:**
   - Correct partial selections get **partial percentage**.
   - Any wrong selection results in **0% for that question**.
-  - 
+
 ✅ **Total Score Calculation**
 
 ✅ **No Installation Required**
