@@ -63,6 +63,26 @@ Modify the provided HTML file to:
   ```
 
 ### 2️⃣ **Question Format (Human-Readable)**
+This is how to prepare your questions before using the conversion tool to add them to the test
+
+> Number in front indicates start of an question
+
+> Answers need to be below the question
+
+> Questions should not have empty lines below each other in prepared data 
+
+> • for answers is optional, answers can be added without it by being below the question. Program will ignore • if its present it. Everything in the lines below the question is read as answer, this is useful if questions are copied from a PDF
+
+> Everything selected with an * next to it is marked as a correct answer
+
+> To make multichoice question just add * to more answers
+
+> To make a multilined question use ```<q> </q>``` to wrap the question around
+
+> For code containing multilined questions to display in a codeblock use 3 ` on the left and right side of the code
+
+EXAMPLES OF PREPARED DATA FOR CONVERSION:
+
 ```txt
 1. Choose the right answer to 2+2
 • 1
@@ -74,6 +94,25 @@ Modify the provided HTML file to:
 • banana *
 • melon *
 • cucumber
+3. <q> Multilined question like this
+can contain a lot of stuff like
+asking about how was your day </q>
+• good *  
+• bad
+• i dont know
+• i dont wanna say 
+4. <q> What does the following code do
+
+``` function add(a, b) { return a + b; } ```
+
+</q>
+• It subtracts  
+• It adds *  
+• It multiplies  
+• It divides  
+
+
+
 ```
 
 ### 3️⃣ **JSON Converted Format**
