@@ -16,20 +16,29 @@ On the server anyone can feel free to ask questions, engage in the comunity and 
 
 ✅ **Single & Multiple Choice Questions**
 - Supports both **single-choice** and **multi-choice** question formats.
+- 
 ✅ **Dark Mode & Light Mode**
+
 ✅ **Randomized Question & Answer Order**
+
 ✅ **Instant Feedback on Mistakes**
+
 ✅ **Accurate Scoring System**
 - **Single-choice questions:** 100% or 0% per question.
 - **Multiple-choice questions:**
   - Correct partial selections get **partial percentage**.
   - Any wrong selection results in **0% for that question**.
+  - 
 ✅ **Total Score Calculation**
+
 ✅ **No Installation Required**
 - The quiz runs **directly in the browser**—no backend or server required.
+- 
 ✅ **Separate Question Converter Tool**
 - Convert human-readable question formats into JSON format for easy integration.
+  
 ✅ Supports multiline questions using <q> and </q>
+
 ✅ Properly extracts code blocks (```)
 
 ---
