@@ -33,11 +33,11 @@ On the server anyone can feel free to ask questions, engage in the comunity and 
 
 ✅ **No Installation Required**
 - The quiz runs **directly in the browser**—no backend or server required.
-- 
+  
 ✅ **Separate Question Converter Tool**
 - Convert human-readable question formats into JSON format for easy integration.
   
-✅ Supports multiline questions using <q> and </q>
+✅ Supports multiline questions using ```<q> and </q>```
 
 ✅ Properly extracts code blocks (```)
 
