@@ -118,37 +118,61 @@ Select the right answer from below:
 
 ### 3️⃣ **JSON Converted Format**
 ```
-    const questionPool = [
-      {
-        question: "Driving in ______ weather is dangerous due to lack of visibility.",
-        options: ["freezing", "foggy", "shiny", "rainy"],
-        correctAnswers: [1],
-        type: "single"
-      },
-      {
-        question: "Which of the following are fruit?",
-        options: ["Carrot", "Apple", "Broccoli", "Strawberry", "Lemon"],
-        correctAnswers: [1, 3, 4],
-        type: "multiple"
-      },
-      {
-        question: "2 + 2 = ?",
-        options: ["3", "4", "5", "6"],
-        correctAnswers: [1],
-        type: "single"
-      },
-      {
-        question: "Select all prime numbers:",
-        options: ["2", "3", "4", "8", "11"],
-        correctAnswers: [0, 1, 4],
-        type: "multiple"
-      },
-      {
-        question: "What color is the sky on a clear day?",
-        options: ["Blue", "Green", "Yellow", "Red"],
-        correctAnswers: [0],
-        type: "single"
-      },
+   const questionPool = [
+  {
+    "question": "Choose the right answer to 2+2",
+    "options": [
+      "1",
+      "2",
+      "4",
+      "5"
+    ],
+    "correctAnswers": [
+      2
+    ],
+    "type": "single"
+  },
+  {
+    "question": "What of the following are fruits?",
+    "options": [
+      "apple",
+      "banana",
+      "melon",
+      "cucumber"
+    ],
+    "correctAnswers": [
+      0,
+      1,
+      2
+    ],
+    "type": "multiple"
+  },
+  {
+    "question": " Multilined question like this\ncan contain a lot of stuff like\nasking about how was your day",
+    "options": [
+      "good",
+      "bad",
+      "i dont know",
+      "i dont wanna say"
+    ],
+    "correctAnswers": [
+      0
+    ],
+    "type": "single"
+  },
+  {
+    "question": " What does the following code do\n``` function add(a, b) { return a + b; } ```\nSelect the right answer from below:\n",
+    "options": [
+      "It subtracts",
+      "It adds",
+      "It multiplies",
+      "It divides"
+    ],
+    "correctAnswers": [
+      1
+    ],
+    "type": "single"
+  }
       // add more questions if you want ...
     ];
 ```
