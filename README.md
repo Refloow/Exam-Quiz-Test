@@ -6,7 +6,7 @@ A lightweight, browser-based quiz platform that allows users to create and custo
 ![image](https://github.com/user-attachments/assets/3ddddb5a-9f9b-4915-a84b-52cb98bbfdd7)
 
 # DISCORD Server:
-On the server anyone can feel free to ask questions, engage in the comunity and discover other free open source software i build
+On the server anyone can feel free to ask questions, engage in the comunity and discover other free open source software i build 
 **https://discord.gg/4enDY8yhuS**
 
 ## Features
